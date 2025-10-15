@@ -39,6 +39,14 @@ class Pipe:
         except (BlockingIOError, InterruptedError):
             # If nothing to read from src, keep going
             return True
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, OSError):
+            # Treat abrupt abort/reset as EOF for this direction
+            try:
+                self.dst.close()  # fully close opposite side to unwind fast
+            except OSError:
+                pass
+            self.closed = True
+            return False
 
         if not data:
             # Peer sent EOF on this side; fully close the opposite socket so the connection winds down deterministically
@@ -61,6 +69,10 @@ class Pipe:
                 view = view[sent:]
             except (BlockingIOError, InterruptedError):
                 time.sleep(0.001)
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, OSError):
+                # Destination vanished mid-send; mark closed
+                self.closed = True
+                return False
 
         return True
 
@@ -135,10 +147,16 @@ def main():
                             break
             finally:
                 # Cleanup
-                sel.unregister(client)
-                sel.unregister(upstream)
-                client.close()
-                upstream.close()
+                for sock in (client, upstream):
+                    try:
+                        sel.unregister(sock)
+                    except Exception:
+                        pass
+                for sock in (client, upstream):
+                    try:
+                        sock.close()
+                    except Exception:
+                        pass
 
                 # End metrics
                 end_ms = _now_ms()
