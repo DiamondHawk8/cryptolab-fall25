@@ -41,10 +41,9 @@ class Pipe:
             return True
 
         if not data:
-            # If src buffer returned b'' (EOF), shutdown writing on destination socket and mark as closed to prevent
-            #   more forwarding.
+            # Peer sent EOF on this side; fully close the opposite socket so the connection winds down deterministically
             try:
-                self.dst.shutdown(socket.SHUT_WR)
+                self.dst.close()
             except OSError:
                 pass
             self.closed = True
