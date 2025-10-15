@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 # Legacy toggle, may be unused
 TLS_CONTENT_CHANGE_CIPHER_SPEC = 20
@@ -17,7 +17,7 @@ class TLSInspector:
     """
     handshake_bytes: int = 0
     app_seen: bool = False  # If true, new bytes are not counted as handshake
-    _buf: bytearray = bytearray()
+    _buf: bytearray = field(default_factory=bytearray)
     include_headers: bool = True  # If False, count only payload bytes
 
     def feed(self, data: bytes) -> None:
