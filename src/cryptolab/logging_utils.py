@@ -34,7 +34,7 @@ def ensure_logger(log_dir: str, log_file: str, level: str = "INFO") -> logging.L
 
 def emit_json(logger: logging.Logger, payload: dict) -> None:
     """
-    Helper, ignoer
+    Helper, ignore
     :param logger:
     :param payload:
     :return:
