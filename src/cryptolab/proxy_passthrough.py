@@ -112,6 +112,12 @@ def main():
             sel.register(client, selectors.EVENT_READ, data=("c2s", client, upstream))
             sel.register(upstream, selectors.EVENT_READ, data=("s2c", upstream, client))
 
+            def _unreg(s):
+                try:
+                    sel.unregister(s)
+                except Exception:
+                    pass
+
             # Construct Pipe instances for both connections
             c2s = Pipe(client, upstream, "c2s")
             s2c = Pipe(upstream, client, "s2c")
@@ -124,7 +130,12 @@ def main():
             try:
                 while True:
                     # Wait up to 50 ms per cycle for socket to becom readable
-                    events = sel.select(timeout=0.05)
+
+                    try:
+                        events = sel.select(timeout=0.05)
+                    except Exception:
+                        # A socket was closed but still registered; exit cleanly to run finally{}
+                        break
 
                     # If no readable sockets this cycle
                     if not events:
@@ -141,10 +152,18 @@ def main():
                         tag, src, dst = key.data
                         if tag == "c2s":
                             c2s.forward_once()
+                            if c2s.closed:
+                                # Closed either inside Pipe; unregister both to keep select() from breaking
+                                _unreg(client)
+                                _unreg(upstream)
                         else:
                             s2c.forward_once()
+                            if s2c.closed:
+                                _unreg(upstream)
+                                _unreg(client)
                         if c2s.closed and s2c.closed:
                             break
+
             finally:
                 # Cleanup
                 for sock in (client, upstream):
