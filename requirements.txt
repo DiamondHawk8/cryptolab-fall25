@@ -1,0 +1,12 @@
+cryptography
+pyOpenSSL
+Flask
+pandas
+matplotlib
+plotly
+psutil
+click
+mitmproxy
+pytest
+python-dotenv
+numpy
