@@ -1,7 +1,8 @@
-def block_match_ratio(ciphertext: bytes, block_bytes: int = 16):
+def identical_block_count(ciphertext: bytes, block_bytes: int = 16):
     """
-    Quantify ECB leakage via repeated 16-byte blocks.
-    i.e. (total_blocks - unique_blocks) / total_blocks.
+    Return (identical_blocks, total_blocks, block_match_ratio).
+    identical_blocks = total_blocks - unique_blocks
+    block_match_ratio = identical_blocks / total_blocks
     :param ciphertext:
     :param block_bytes:
     :return:
