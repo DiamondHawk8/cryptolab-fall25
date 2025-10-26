@@ -1,0 +1,11 @@
+# 1)
+python .\main.py ecb pp --photo .\assets\test.jpg
+
+# 2)
+python .\main.py ecb gcm --photo .\assets\test.jpg --save-gcm-visual
+
+# Supplement
+python .\main.py ecb checkerboard
+
+# Supplement
+python .\main.py ecb nopp --photo .\assets\test.jpg
