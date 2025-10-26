@@ -63,3 +63,21 @@ def aes_gcm_encrypt(raw: bytes, key: bytes, nonce: bytes|None=None) -> tuple[byt
     :param nonce:
     :return:
     """
+    if len(key) not in (16, 24, 32):
+        raise ValueError("key must be 128/192/256-bit")
+
+    if nonce is None:
+        nonce = os.urandom(12)
+
+    elif len(nonce) != 12:
+        raise ValueError("GCM nonce must be 12 bytes")
+
+    aead = AESGCM(key)
+
+    ct_plus_tag = aead.encrypt(nonce, raw, associated_data=None)
+
+    # Split off the last 16 bytes (tag)
+    if len(ct_plus_tag) < 16:
+        raise RuntimeError("unexpected GCM output size")
+
+    return ct_plus_tag[:-16], nonce, ct_plus_tag[-16:]
