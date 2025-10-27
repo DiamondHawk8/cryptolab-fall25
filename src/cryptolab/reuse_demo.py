@@ -1,22 +1,30 @@
-def run_reuse_demo(mode: str, in1_path: str, in2_path: str, algo: str = "aesgcm", key_hex: str | None = None,
-                   nonce_hex: str | None = None, danger: bool = False) -> None:
-    """
+from __future__ import annotations
+import argparse, json, os, sys
+from pathlib import Path
+from typing import Tuple
+from logging_utils import emit_json
 
-    :param mode: "attack" reuses a single nonce for two encryptions, "patched" uses distinct nonces.
-    :param in1_path: Input blob 1
-    :param in2_path: Input blob 2
-    :param algo: Encryption/Decryption algorithm (AES-GCM or ChaCha20-Poly1305).
-    :param key_hex:
-    :param nonce_hex:
-    :param danger:
-    :return:
-    """
-    pass
 
-def xor_ciphertexts(ct1: bytes, ct2: bytes) -> bytes:
+try:
+    from logging_utils import emit_json
+except Exception:
+    emit_json = None  # fallback below
+
+from .crypto_utils import (
+    aes_gcm_encrypt,
+    chacha20poly1305_encrypt,
+)
+
+from attacks.nonce_reuse import xor_bytes, ascii_crib_drag_fraction
+
+
+
+def xor_bytes(a: bytes, b: bytes) -> bytes:
     """
-    Return ct1 ⊕ ct2 up to min length; mirrors pt1 ⊕ pt2 when nonce is reused.
-    :param ct1: Ciphertext 1
-    :param ct2: Ciphertext 2
-    :return: ct1 ⊕ ct2
+    XOR two byte strings up to min(len(a), len(b)).
+    :param a: byte 1
+    :param b: byte 2
+    :return: a ⊕ b
     """
+    n = min(len(a), len(b))
+    return bytes(x ^ y for x, y in zip(a[:n], b[:n]))
