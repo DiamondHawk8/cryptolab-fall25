@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
+
 def pkcs7_pad(b: bytes, block_size: int = 16) -> bytes:
     """
     Add PKCS#7 padding to multiple of block_size.
@@ -17,6 +18,7 @@ def pkcs7_pad(b: bytes, block_size: int = 16) -> bytes:
     pad_len = block_size - (len(b) % block_size or block_size)
 
     return b + bytes([pad_len]) * pad_len
+
 
 def pkcs7_unpad(b: bytes, block_size: int = 16) -> bytes:
     """
@@ -55,7 +57,7 @@ def aes_ecb_encrypt(raw: bytes, key: bytes) -> bytes:
     return encryptor.update(raw) + encryptor.finalize()
 
 
-def aes_gcm_encrypt(raw: bytes, key: bytes, nonce: bytes|None=None) -> tuple[bytes, bytes, bytes]:
+def aes_gcm_encrypt(raw: bytes, key: bytes, nonce: bytes | None = None) -> tuple[bytes, bytes, bytes]:
     """
     AES-GCM; return (ciphertext, nonce12, tag16). Use os.urandom(12) if nonce None.
     :param raw:
