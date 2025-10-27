@@ -1,7 +1,7 @@
 import os
-from typing import Tuple
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 def pkcs7_pad(b: bytes, block_size: int = 16) -> bytes:
     """
@@ -79,5 +79,30 @@ def aes_gcm_encrypt(raw: bytes, key: bytes, nonce: bytes|None=None) -> tuple[byt
     # Split off the last 16 bytes (tag)
     if len(ct_plus_tag) < 16:
         raise RuntimeError("unexpected GCM output size")
+
+    return ct_plus_tag[:-16], nonce, ct_plus_tag[-16:]
+
+
+def chacha20poly1305_encrypt(raw: bytes, key: bytes, nonce: bytes | None = None) -> tuple[bytes, bytes, bytes]:
+    """
+    ChaCha20-Poly1305; return (ciphertext, nonce12, tag16). Uses os.urandom(12) if nonce None.
+    :param raw: Data to encrypt
+    :param key: Key must be 32 bytes. Nonce must be 12 bytes (IETF variant).
+    :param nonce: Nonce
+    :return:
+    """
+    if len(key) != 32:
+        raise ValueError("ChaCha20-Poly1305 key must be 256-bit (32 bytes)")
+
+    if nonce is None:
+        nonce = os.urandom(12)
+    elif len(nonce) != 12:
+        raise ValueError("ChaCha20-Poly1305 nonce must be 12 bytes")
+
+    aead = ChaCha20Poly1305(key)
+    ct_plus_tag = aead.encrypt(nonce, raw, associated_data=None)
+
+    if len(ct_plus_tag) < 16:
+        raise RuntimeError("unexpected ChaCha20-Poly1305 output size")
 
     return ct_plus_tag[:-16], nonce, ct_plus_tag[-16:]
