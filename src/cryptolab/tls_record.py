@@ -1,6 +1,7 @@
+# Unused, ran out of time to finish downgrade simulation.
+
 from dataclasses import dataclass, field
 
-# Legacy toggle, may be unused
 TLS_CONTENT_CHANGE_CIPHER_SPEC = 20
 
 TLS_CONTENT_ALERT = 21

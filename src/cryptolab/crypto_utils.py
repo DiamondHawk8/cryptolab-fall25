@@ -46,7 +46,7 @@ def aes_ecb_encrypt(raw: bytes, key: bytes) -> bytes:
     """
 
     if len(raw) % 16 != 0:
-        raise ValueError("raw must be multiple of 16 (pad first)")
+        raise ValueError("the raw must be multiple of 16 (pad first ykyk)")
 
     if len(key) not in (16, 24, 32):
         raise ValueError("key must be 128/192/256-bit")
@@ -108,3 +108,30 @@ def chacha20poly1305_encrypt(raw: bytes, key: bytes, nonce: bytes | None = None)
         raise RuntimeError("unexpected ChaCha20-Poly1305 output size")
 
     return ct_plus_tag[:-16], nonce, ct_plus_tag[-16:]
+
+
+def aes_ctr_keystream(nbytes: int, key: bytes, iv: bytes) -> bytes:
+    """
+    Generate nbytes of keystream using AES-CTR by encrypting a zero buffer.
+    AES-CTR uses a 16-byte (128-bit) IV/initial counter.
+    """
+    if len(key) not in (16, 24, 32):
+        raise ValueError("AES-CTR key must be 128/192/256-bit")
+    if len(iv) != 16:
+        raise ValueError("AES-CTR IV must be 16 bytes")
+    cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
+    encryptor = cipher.encryptor()
+    return encryptor.update(b"\x00" * nbytes) + encryptor.finalize()
+
+
+def aes_ctr_encrypt(raw: bytes, key: bytes, iv: bytes) -> bytes:
+    """
+    AES-CTR encryption: raw ⊕ keystream. Returns ciphertext (no tag).
+    """
+    if len(key) not in (16, 24, 32):
+        raise ValueError("AES-CTR key must be 128/192/256-bit")
+    if len(iv) != 16:
+        raise ValueError("AES-CTR IV must be 16 bytes")
+    cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
+    encryptor = cipher.encryptor()
+    return encryptor.update(raw) + encryptor.finalize()

@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 from typing import Tuple
 
-from attacks.nonce_reuse import xor_bytes, ascii_crib_drag_fraction
-from crypto_utils import aes_gcm_encrypt, chacha20poly1305_encrypt
-from logging_utils import ensure_logger, emit_json
+from src.cryptolab.attacks.nonce_reuse import xor_bytes, ascii_crib_drag_fraction
+from src.cryptolab.crypto_utils import aes_gcm_encrypt, chacha20poly1305_encrypt
+from src.cryptolab.logging_utils import ensure_logger, emit_json
 
 REPO = Path(__file__).resolve().parents[2]
 ASSETS = REPO / "assets"
